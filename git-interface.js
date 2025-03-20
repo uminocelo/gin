@@ -53,7 +53,15 @@ class GitInterface {
         }
       })
     });
-  }  
+  }
+
+  async init(bare = false) {
+    const args = ['init'];
+    if (bare) args.push('--bare');
+
+    await fs.mkdir(this.repoPath, { recursive: true });
+    return this.execute(args, { failOnError: true });
+  }
 }
 
 module.exports = GitInterface;
