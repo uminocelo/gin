@@ -1,11 +1,25 @@
 {
   "name": "git-node-git",
   "version": "1.0.0",
-  "description": "",
+  "description": "A robust Node.js interface for Git operations",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "lint": "eslint .",
+    "example": "node example.js"
   },
-  "author": "",
-  "license": "ISC"
+  "keywords": [
+    "git",
+    "nodejs",
+    "interface",
+    "version-control"
+  ],
+  "author": "Marcelo Muniz da Luz",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
 }
