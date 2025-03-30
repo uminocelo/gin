@@ -66,6 +66,51 @@ class GitInterface {
     await fs.mkdir(this.repoPath, { recursive: true });
     return this.execute(args, { failOnError: true });
   }
+
+  async isRepository() {
+    try {
+      await this.execute(['rev-parse', '--is-inside-work-tree']);
+      return true;
+    } catch (error) {
+      this.log('Not a git repository:', error);
+      return false;
+    }
+  }
+
+  async clone(url, options = {}) {
+    const args = ['clone'];
+
+    if (options.branch) args.push('--branch', options.branch);
+    if (options.depth) args.push('--depth', options.depth);
+    if (options.recursive) args.push('--recursive');
+    if (options.shallow) args.push('--shallow-submodules');
+
+    args.push(url, this.repoPath);
+
+    return this.execute(args, { cwd: path.dirname(this.repoPath)});
+  }
+
+  async status(options = {}) {
+    const args = ['status'];
+
+    if (options.short) args.push('--short');
+    if (options.branch) args.push('--branch');
+    if (options.porcelain) args.push('--porcelain');
+
+    return this.execute(args);
+  }
+
+  async add(files) {
+    const args = ['add'];
+
+    if (Array.isArray(files)) {
+      args.push(...files);
+    } else {
+      args.push(files);
+    }
+
+    return this.execute(args);
+  }
 }
 
 module.exports = GitInterface;
