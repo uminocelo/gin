@@ -202,6 +202,29 @@ class GitInterface {
 
     return this.execute(args);
   }
+
+  async getCommits(format = '%H%n%an%n%ae%n%at%n%s%n%b%n<END>', maxCount = 10) {
+    const { stdout } = await this.log({ foramt, maxCount });
+
+    const commits = [];
+    const commitTexts = stdout.split('<END>\n').filter(Boolean);
+
+    for (const commitText of commitTexts) {
+      const lines = commitText.split('\n');
+      const commit = {
+        hash: lines[0],
+        author: lines[1],
+        email: lines[2],
+        date: new Date(parseInt(lines[3], 10) * 1000),
+        subject: lines[4],
+        body: lines.slice(5).join('\n').trim()
+      }
+
+      commits.push(commit);
+    }
+
+    return commits;
+  }
 }
 
 module.exports = GitInterface;
