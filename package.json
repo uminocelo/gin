@@ -1,7 +1,7 @@
 {
-  "name": "git-node-git",
+  "name": "gin",
   "version": "1.0.0",
-  "description": "A robust Node.js interface for Git operations",
+  "description": "G.I.N: Git in Node is a robust Node.js interface for Git operations",
   "main": "index.js",
   "scripts": {
     "test": "jest",
@@ -14,7 +14,7 @@
     "interface",
     "version-control"
   ],
-  "author": "Marcelo Muniz da Luz",
+  "author": "Marcelo Muniz da Luz <marcelo.mdl.dev@gmail.com>",
   "license": "MIT",
   "engines": {
     "node": ">=14.0.0"
