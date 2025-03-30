@@ -149,6 +149,59 @@ class GitInterface {
 
     return this.execute(args);
   }
+
+  async createBranch(name, options = {}) {
+    const args = ['branch']
+
+    if (options.force) args.push('--force');
+
+    args.push(name);
+
+    if (options.startPoint) args.push(options.startPoint);
+
+    return this.execute(args);
+  }
+
+  async checkout(branchName, options ={}) {
+    const args = ['checkout'];
+
+    if (options.force) args.push('--force');
+    if (options.createBranch) args.push('-b');
+
+    args.push(branchName);
+    return this.execute(args);
+  }
+
+  async pull(remote = 'origin', branch = 'main', options = {}) {
+    const args = ['pull'];
+    
+    if (options.rebase) args.push('--rebase');
+    if (options.noFf) args.push('--no-ff');
+
+    args.push(remote, branch);
+    return this.execute(args);
+  }
+
+  async push(remote = 'origin', branch = 'main', options = {}) {
+    const args = ['push'];
+
+    if (options.force) args.push('--force');
+    if (options.tags) args.push('--tags');
+
+    args.push(remote, branch);
+    return this.execute(args);
+  }
+
+  async log(options = {}) {
+    const args = ['log'];
+
+    if (options.maxCount) args.push(`-n${options.maxCount}`);
+    if (options.oneline) args.push('--oneline');
+    if (options.format) args.push(`--format=${options.format}`);
+    if (options.graph) args.push('--graph');
+
+    return this.execute(args);
+  }
 }
 
 module.exports = GitInterface;
