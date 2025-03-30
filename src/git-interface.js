@@ -111,6 +111,44 @@ class GitInterface {
 
     return this.execute(args);
   }
+
+  async commit(message, options = {}) {
+    if (!message.trim()) {
+      const { stdout } = await this.execute(['status', '--porcelain']);
+      
+      const changedFiles = stdout
+        .trim()
+        .split('\n')
+        .filter(line => line.trim() !== '')
+        .map(line => line.substring(3).trim());
+      
+      // Generate automatic commit message
+      if (changedFiles.length > 0) {
+        const fileList = changedFiles.length <= 3 
+          ? changedFiles.join(', ')
+          : `${changedFiles.slice(0, 3).join(', ')} and ${changedFiles.length - 3} more files`;
+        
+        message = `Update ${fileList}`;
+      } else {
+        message = "Empty commit";
+      }
+      
+      this.log(`Generated automatic commit message: ${message}`);
+    }
+
+    if (typeof message !== 'string') {
+      throw new TypeError('Commit message must be a string');
+    }
+
+    const args = ['commit', '-m', message];
+
+    if (options.all) args.push('--all');
+    if (options.amend) args.push('--amend');
+    if (options.author) args.push('--author', options.author);
+    if (options.date) args.push('--date', options.date);
+
+    return this.execute(args);
+  }
 }
 
 module.exports = GitInterface;
