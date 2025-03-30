@@ -40,6 +40,10 @@ class GitInterface {
 
       cmd.stdout.on('data', data => stdout += data.toString());
       cmd.stderr.on('data', data => stderr += data.toString());
+      cmd.on('error', error => {
+        this.log('Error executing command:', error);
+        reject(new Error(`Command execution failed: ${error.message}`));
+      });
 
       cmd.on('close', exitCode => {
         this.log(`Command exited with code ${exitCode}`);
