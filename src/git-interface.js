@@ -204,7 +204,7 @@ class GitInterface {
   }
 
   async getCommits(format = '%H%n%an%n%ae%n%at%n%s%n%b%n<END>', maxCount = 10) {
-    const { stdout } = await this.log({ foramt, maxCount });
+    const { stdout } = await this.log({ format, maxCount });
 
     const commits = [];
     const commitTexts = stdout.split('<END>\n').filter(Boolean);
