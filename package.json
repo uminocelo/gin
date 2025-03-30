@@ -1,7 +1,7 @@
 {
   "name": "gin",
   "version": "1.0.0",
-  "description": "G.I.N: Git in Node is a robust Node.js interface for Git operations",
+  "description": "G.I.N a.k.a Git in Node is a robust Node.js interface for Git operations",
   "main": "index.js",
   "scripts": {
     "test": "jest",
