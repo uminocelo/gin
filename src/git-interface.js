@@ -312,6 +312,201 @@ class GitInterface {
 
     return this.execute(args);
   }
+
+  async applyStash(stash = 'stash@{0}') {
+    const args = ['stash', 'apply', stash];
+
+    return this.execute(args);
+  }
+
+  async dropStash(stash = 'stash@{0}') {
+    const args = ['stash', 'drop', stash];
+
+    return this.execute(args);
+  }
+
+  async listStashes() {
+    const { stdout }  = await this.execute(['stash', 'list']);
+    const stashes = [];
+    const lines = stdout.split('\n').filter(Boolean);
+
+    for (const line of lines) {
+      const match = line.match(/(stash@\{\d+\}): (.+)/);
+      if (match) {
+        const stash = {
+          index: parseInt(match[1], 10),
+          description: match[2],
+          refence: `stash@{${match[1]}}`
+        };
+
+        stashes.push(stash);
+      }
+    }
+
+    return stashes;
+  }
+
+  async getConfig(name) {
+    try {
+      const { stdout } = await this.execute(['config', '--get', name]);
+      return stdout.trim();
+    } catch (error) {
+      if (error.message.includes('not found')) {
+        return null;
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  async setConfig(name, value, global = false) {
+    const args = ['config'];
+
+    if (global) args.push('--global');
+
+    args.push(name, value);
+
+    return this.execute(args);
+  }
+
+  async addRemote(name, url) {
+    const args = ['remote', 'add', name, url];
+
+    return this.execute(args);
+  }
+
+  async removeRemote(name) {
+    const args = ['remote', 'remove', name];
+
+    return this.execute(args);
+  }
+
+  async commitExists(hash) {
+    try {
+      await this.execute(['cat-file', '-e', `${commitHash}^{commit}`]);
+      return true;
+    } catch (error) {
+      if (error.message.includes('not found')) {
+        return false;
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  async getCommitMessage(hash) {
+    const { stdout } = await this.execute(['log', '-1', '--pretty=format:%s', hash]);
+    return stdout.trim();
+  }
+
+  async cherryPick(hash) {
+    const args = ['cherry-pick', hash];
+
+    return this.execute(args);
+  }
+
+  async getChanges() {
+    const { stdout } = await this.status({ parcelain: true });
+    const changes = [];
+    const lines = stdout.split('\n').filter(Boolean);
+
+    for (const line of lines) {
+      const statusCode = line.substring(0, 2);
+      const filePath = line.substring(3);
+
+      let status;
+      if (statusCode === '??') status = 'untracked';
+      else if (statusCode === 'M') status = 'modified';
+      else if (statusCode === 'A') status = 'added';
+      else if (statusCode === 'D') status = 'deleted';
+      else if (statusCode === 'R') status = 'renamed';
+      else if (statusCode === 'C') status = 'copied';
+      else if (statusCode === 'U') status = 'unmerged';
+      else status = 'unknown';
+
+      changes.push({ status, path: filePath });
+    }
+
+    return changes;
+  }
+
+  async getFileContent(filePath, commitHash = 'HEAD') {
+    try {
+      const { stdout } = await this.execute(['show', `${commitHash}:${filePath}`]);
+      return stdout;
+    } catch (error) {
+      throw new Error(`Failed to get file content: ${error.message}`);
+    }
+  }
+
+  async getRepoRoot() {
+    const { stdout } = await this.execute(['rev-parse', '--show-toplevel']);
+    return stdout.trim();
+  }
+
+  async blame(filePath) {
+    const args = ['blame', filePath];
+
+    return this.execute(args);
+  }
+
+  async isWorkingDirectoryClean() {
+    const { stdout } = await this.status({ porcelain: true });
+    return stdout.trim() === '';
+  }
+
+  async getUntrackedFiles() {
+    const { stdout } = await this.execute(['ls-files', '--others', '--exclude-standard']);
+    return stdout.split('\n').filter(Boolean);
+  }
+
+  async getConflictedFiles() {
+    const { stdout } = await this.execute(['diff', '--name-only', '--diff-filter=U']);
+    return stdout.split('\n').filter(Boolean);
+  }
+
+  async getLastCommitHash() {
+    const { stdout } = await this.execute(['rev-parse', 'HEAD']);
+    return stdout.trim();
+  }
+
+  async getVersion() {
+    const { stdout } = await this.execute(['--version']);
+    const match = stdout.match(/git version (\d+\.\d+\.\d+)/);
+    if (match) {
+      return match[1];
+    } else {
+      return stdout.trim();
+    }
+  }
+
+  async addWorktree(path, branch) {
+    return this.execute(['worktree', 'add', path, branch]);
+  }
+
+  async removeWorktree(path) {
+    return this.execute(['worktree', 'remove', path]);
+  }
+
+  async listWorktrees() {
+    const { stdout } = await this.execute(['worktree', 'list']);
+    const worktrees = [];
+    const worktreeTexts = stdout.split('\n').filter(Boolean);
+
+    for (const worktreeText of worktreeTexts) {
+      const lines = worktreeText.split('\n');
+      const worktree = {};
+
+      for (const line of lines) {
+        const [key, value] = line.split(' ');
+        worktree[key] = value;
+      }
+
+      worktrees.push(worktree);
+    }
+
+    return worktrees;
+  }
 }
 
 module.exports = GitInterface;
