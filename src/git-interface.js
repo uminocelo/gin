@@ -225,6 +225,93 @@ class GitInterface {
 
     return commits;
   }
+
+  async getCurrentBranch() {
+    const { stdout } = await this.execute(['rev-parse', '--abbrev-ref', 'HEAD']);
+    return stdout.trim();
+  }
+
+  async getBranches() {
+    const args = ['branch'];
+    
+    const { stdout } = await this.execute(args);
+    return stdout
+      .split('\n')
+      .map(branch => branch.trim().replace(/^\*\s+ /, ''))
+      .filter(Boolean)
+  }
+
+  async getRemotes() {
+    const { stdout } = await this.execute(['remote', '-v']);
+    const remotes = [];
+    const lines = stdout.split('\n').filter(Boolean);
+
+    for (const line of lines) {
+      const match = line.match(/(\S+)\s+(\S+)\s+\((\S+)\)/);
+      if (match) {
+        const remote = {
+          name: match[1],
+          url: match[2],
+          type: match[3]
+        };
+        remotes.push(remote);
+      }
+    }
+  }
+
+  async fetch(remote = 'origin', options = {}) {
+    const args = ['fetch'];
+
+    if (options.prune) args.push('--prune');
+    if (options.all) args.push('--all');
+
+    args.push(remote);
+
+    return this.execute(args);
+  }
+
+  async merge(branch, options = {}) {
+    const args = ['merge'];
+
+    if (options.noFf) args.push('--no-ff');
+    if (options.squash) args.push('--squash');
+
+    args.push(branch);
+
+    return this.execute(args);
+  }
+
+  async tag(name, message) {
+    return this.execute(['tag', '-a', name, '-m', message]);
+  }
+
+  async show(revisionRange) {
+    return this.execute(['show', revisionRange]);
+  }
+
+  async reset(mode, commit = 'HEAD') {
+    const args = ['reset'];
+
+    if (mode === 'soft') args.push('--soft');
+    else if (mode === 'mixed') args.push('--mixed');
+    else if (mode === 'hard') args.push('--hard');
+
+    args.push(commit);
+
+    return this.execute(args);
+  }
+
+  async revert(commit) {
+    return this.execute(['revert', commit]);
+  }
+
+  async stash(message) {
+    const args = ['stash'];
+
+    if (message) args.push('push', '-m', message);
+
+    return this.execute(args);
+  }
 }
 
 module.exports = GitInterface;
